@@ -42,8 +42,7 @@ function onSelectChange(e) {
     .catch(() => errorShow(errorMessage));
 }
 
-
-function errorShow(message, timeout=10000) {
+function errorShow(message, timeout = 10000) {
   refs.loader.classList.add('is-hidden');
   refs.error.classList.remove('is-hidden');
   refs.error.textContent = notifyError(message, timeout);
