@@ -10,57 +10,54 @@ import getRefs from './get-refs';
 import { fetchBreeds, fetchCatByBreed } from './cat-api';
 
 const refs = getRefs();
+const errorMessage = 'Oops! Something went wrong! Try reloading the page!';
 
-// new SlimSelect({
-//   select: refs.select
-// })
-refs.error.style.display = 'none';
-refs.select.style.display = 'none';
+refs.error.classList.add('is-hidden');
+refs.select.classList.add('is-hidden');
 
 fetchBreeds()
   .then(data => {
     const selectMarkup = selectTpl(data);
     refs.select.innerHTML = selectMarkup;
-    refs.loader.style.display = 'none';
-    refs.select.style.display = 'inline-block';
+    refs.loader.classList.add('is-hidden');
+    refs.select.classList.remove('is-hidden');
+    new SlimSelect({
+      select: refs.select,
+    });
   })
-  .catch(() => {
-    // refs.select.style.display = 'none';
-    refs.loader.style.display = 'none';
-    // refs.error.style.display = 'block';
-    notifyError();
-  });
+  .catch(() => errorShow(errorMessage, 100000));
 
 refs.select.addEventListener('change', onSelectChange);
 
 function onSelectChange(e) {
   refs.catInfo.innerHTML = '';
-  refs.loader.style.display = 'block';
+  refs.loader.classList.remove('is-hidden');
 
   fetchCatByBreed(e.target.value)
     .then(data => {
-      const catInfoMarkup = catsMarkup(data);
-      refs.loader.style.display = 'none';
+      const catInfoMarkup = catMarkup(data);
+      refs.loader.classList.add('is-hidden');
       refs.catInfo.innerHTML = catInfoMarkup;
     })
-    .catch(() => {
-      notifyError();
-      refs.loader.style.display = 'none';
-      refs.error.style.display = 'block';
-    });
+    .catch(() => errorShow(errorMessage));
 }
 
-function notifyError(
-  message = 'Oops! Something went wrong! Try reloading the page!'
-) {
+
+function errorShow(message, timeout=10000) {
+  refs.loader.classList.add('is-hidden');
+  refs.error.classList.remove('is-hidden');
+  refs.error.textContent = notifyError(message, timeout);
+}
+
+function notifyError(message, timeout) {
   Notify.failure(message, {
-    timeout: 10000,
+    timeout: timeout,
     showOnlyTheLastOne: true,
     position: 'center-center',
   });
 }
 
-function catsMarkup(data) {
+function catMarkup(data) {
   return `<img src="${data.url}" alt="${data.breeds[0].name}" >
           <div>
             <h2>${data.breeds[0].name}</h2>
